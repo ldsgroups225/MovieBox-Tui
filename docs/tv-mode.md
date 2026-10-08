@@ -22,9 +22,10 @@ Playlists are saved to `tv_config.json` in your configuration directory.
 
 ## Channel Parsing & Safeguards
 
-- **Size Limits**: Files and downloads larger than 15 MB are rejected to prevent excessive memory consumption.
+- **Size Limits**: Local files and normal remote playlist loads are checked against a 15 MiB limit.
 - **Deduplication**: Channels sharing identical stream URLs across multiple playlists are deduplicated.
 - **Attributes**: Parses `#EXTINF:` tags for `tvg-id`, `tvg-logo`, `group-title`, and channel name.
+- **EPG**: No EPG source is fetched or parsed currently; `tvg-id` is retained as metadata only.
 
 ## Playback & Commands
 

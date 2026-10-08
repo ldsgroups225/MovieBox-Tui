@@ -63,7 +63,8 @@ pub fn detect() -> Vec<PlayerKind> {
 
     let is_termux = crate::config::is_termux_environment();
     let has_gui = has_graphical_display();
-    if is_termux && !has_gui && !android_openers().is_empty() {
+    let openers = probe_android_openers();
+    if is_termux && !has_gui && !openers.is_empty() {
         players.push(PlayerKind::AndroidIntent);
     }
 
@@ -80,7 +81,7 @@ pub fn detect() -> Vec<PlayerKind> {
         players.push(PlayerKind::Vlc);
     }
 
-    if (!is_termux || has_gui) && !android_openers().is_empty() {
+    if (!is_termux || has_gui) && !openers.is_empty() {
         players.push(PlayerKind::AndroidIntent);
     }
 
@@ -417,7 +418,7 @@ pub fn android_intent_commands(
     subtitle: Option<&str>,
     headers: &[(String, String)],
 ) -> Vec<(AndroidOpener, Command)> {
-    let openers = android_openers();
+    let openers = probe_android_openers();
     if openers.is_empty() {
         let mut cmd = Command::new("termux-open");
         cmd.arg("--chooser")
@@ -1784,14 +1785,23 @@ mod tests {
         let termux_am = bin_dir.join("termux-am");
         std::fs::write(&termux_am, "#!/bin/sh\nexit 0").unwrap();
         let _lock = ENV_MUTEX.lock().unwrap();
+        let original_env = ["TERMUX_VERSION", "PREFIX", "DISPLAY", "WAYLAND_DISPLAY"]
+            .map(|key| (key, std::env::var_os(key)));
         unsafe {
             std::env::set_var("TERMUX_VERSION", "0.118.0");
             std::env::set_var("PREFIX", temp_dir.to_str().unwrap());
+            std::env::remove_var("DISPLAY");
+            std::env::remove_var("WAYLAND_DISPLAY");
         }
         let detected = detect();
         unsafe {
-            std::env::remove_var("TERMUX_VERSION");
-            std::env::remove_var("PREFIX");
+            for (key, value) in original_env {
+                if let Some(value) = value {
+                    std::env::set_var(key, value);
+                } else {
+                    std::env::remove_var(key);
+                }
+            }
         }
         let _ = std::fs::remove_dir_all(&temp_dir);
 

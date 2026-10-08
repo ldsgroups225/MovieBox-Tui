@@ -965,7 +965,10 @@ impl App {
                             .state
                             .selected_details
                             .as_ref()
-                            .map(|d| d.sibling_ids())
+                            .map(|d| {
+                                crate::providers::moviebox::locale::MovieBoxLocale::current()
+                                    .caption_sibling_ids(d)
+                            })
                             .unwrap_or_default();
                         let season = self.state.selected_season;
                         let episode = self.state.selected_episode;
@@ -1019,7 +1022,14 @@ impl App {
                     self.state.is_download_subtitle_popup = false;
                     self.state.subtitle_popup = true;
                     self.state.subtitle_list = options;
-                    self.state.subtitle_list_state.select(Some(0));
+                    let preferred = crate::providers::moviebox::locale::MovieBoxLocale::current();
+                    let preferred_idx = self
+                        .state
+                        .subtitle_list
+                        .iter()
+                        .position(|(name, _)| preferred.matches_language_label(name))
+                        .unwrap_or(0);
+                    self.state.subtitle_list_state.select(Some(preferred_idx));
                     self.state.pending_play_link = Some(link);
                 } else {
                     if let Some(source) = self.state.pending_playback_source.take() {
@@ -1051,7 +1061,14 @@ impl App {
                     self.state.subtitle_popup = false;
                     self.state.is_download_subtitle_popup = true;
                     self.state.subtitle_list = options;
-                    self.state.subtitle_list_state.select(Some(0));
+                    let preferred = crate::providers::moviebox::locale::MovieBoxLocale::current();
+                    let preferred_idx = self
+                        .state
+                        .subtitle_list
+                        .iter()
+                        .position(|(name, _)| preferred.matches_language_label(name))
+                        .unwrap_or(0);
+                    self.state.subtitle_list_state.select(Some(preferred_idx));
                 } else {
                     self.action_sender.send(Action::DownloadStream(None)).ok();
                 }

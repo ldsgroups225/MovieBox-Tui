@@ -2,15 +2,25 @@
 
 ## [Unreleased]
 
+## [0.1.27] - 2026-10-08
+
 ### Added
+- **French-First MovieBox Locale**:
+  - Added `MOVIEBOX_LOCALE` (`fr` by default, `en` as an option) and aligned request headers, client metadata, dubbed audio selection, and caption preference with the selected locale.
+- **External API Integration Reference**:
+  - Documented the provider endpoints, request formats, authentication behavior, and limitations observed in the current implementation.
 - **In-App Updater Lifecycle**:
   - Tracked target executable path before staging updates and resolved deleted inode suffixes (` (deleted)`) on Linux to restart the new binary automatically after popup self-update.
   - Scoped Snap package detection to `SNAP_NAME` matching `moviebox-tui` to prevent false positive Snap environment detection when launched inside unrelated host sandboxes.
 
 ### Changed
+- Corrected Live TV documentation to remove the unsupported EPG claim.
 - **Dependencies & Build Infrastructure**:
   - Upgraded `sha2` to 0.11 with chunked streaming hash updates, preserving non-blocking checksum verification for release archives.
   - Upgraded `dirs` to 7.0, `futures` to 0.3.34, and `zip` to 8.6 across platform config paths, async tasks, and updater archive extraction.
+
+### Fixed
+- Android player discovery now probes current environment paths so Termux launchers are not missed after stale detection.
 
 ## [0.1.26] - 2026-10-01
 

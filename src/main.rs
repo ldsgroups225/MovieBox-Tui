@@ -95,6 +95,7 @@ async fn main() -> std::io::Result<()> {
         println!("    MOVIEBOX_LOG            Log level (off, error, warn, info, debug, trace)");
         println!("    MOVIEBOX_THEME          Theme name (e.g. catppuccin, dracula, nord, etc.)");
         println!("    MOVIEBOX_PLAYER         Preferred player (mpv, iina, vlc, android)");
+        println!("    MOVIEBOX_LOCALE         MovieBox locale (fr, fr-FR, en, en-US; default fr)");
         println!("    MOVIEBOX_MPV_PATH       Custom mpv binary path");
         println!("    MOVIEBOX_VLC_PATH       Custom vlc binary path");
         println!("    MOVIEBOX_IINA_PATH      Custom iina-cli binary path");

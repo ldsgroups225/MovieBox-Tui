@@ -18,7 +18,7 @@
 ## Features
 
 - **Streaming:** Movies, TV series, anime, Asian dramas, and community Stremio addons across multiple native providers.
-- **Live TV:** M3U playlist import with channel categories, EPG support, and search.
+- **Live TV:** M3U playlist import with channel categories and search.
 - **Resolution Picker:** Direct stream quality selection (`4K`, `1080p`, `720p`, `480p`, `Auto`) before playback.
 - **Hardware Players:** Direct launch in `mpv`, `VLC`, or `IINA` with custom auth header and cookie forwarding.
 - **Batch Downloader:** Multi-segment concurrent downloader with HTTP range pause and resume for episodes and full seasons.
@@ -130,6 +130,7 @@ Full documentation at [**mesamirh.github.io/MovieBox-Tui**](https://mesamirh.git
 | [Keyboard & Controls](docs/controls.md) | Keybindings, vim navigation, and shortcuts |
 | [Configuration](docs/config.md) | Settings, themes, and environment variables |
 | [Content Providers](docs/providers.md) | Native scrapers (MovieBox, 4KHDHub, Dramachi, BDIX) |
+| [External API Integrations](docs/api-integrations.md) | Routes, formats, and limitations of external interfaces |
 | [Stremio Addons](docs/addons-mode.md) | Community addon configuration and streaming |
 | [Hardware Players](docs/players.md) | Player detection, launch options, and flags |
 | [Live TV & IPTV](docs/tv-mode.md) | M3U playlist import and channel streaming |

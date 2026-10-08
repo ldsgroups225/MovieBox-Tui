@@ -1,4 +1,5 @@
 use crate::providers::moviebox::crypto::build_signed_headers;
+use crate::providers::moviebox::locale::MovieBoxLocale;
 use crate::providers::moviebox::session::{
     MovieBoxSession, clear_persisted_session, load_persisted_session, save_session,
 };
@@ -41,7 +42,7 @@ pub struct MovieBoxClient {
     active_base_idx: Arc<AtomicUsize>,
     user_agent: String,
     client_info: String,
-    spoofed_ip: String,
+    locale: MovieBoxLocale,
 }
 
 impl Default for MovieBoxClient {
@@ -61,9 +62,9 @@ impl MovieBoxClient {
             .build()
             .expect("moviebox http client");
 
+        let locale = MovieBoxLocale::current();
         let (user_agent, client_info) =
-            crate::providers::moviebox::crypto::generate_client_info_and_ua();
-        let spoofed_ip = crate::providers::moviebox::crypto::random_spoofed_ip();
+            crate::providers::moviebox::crypto::generate_client_info_and_ua(locale);
 
         Self {
             client,
@@ -72,7 +73,7 @@ impl MovieBoxClient {
             active_base_idx: Arc::new(AtomicUsize::new(0)),
             user_agent,
             client_info,
-            spoofed_ip,
+            locale,
         }
     }
 
@@ -254,7 +255,7 @@ impl MovieBoxClient {
                 auth_token,
                 &self.user_agent,
                 &self.client_info,
-                &self.spoofed_ip,
+                self.locale,
             );
 
             let mut builder = match method {

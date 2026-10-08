@@ -198,12 +198,13 @@ impl MovieBoxService {
         if !subject_id.is_empty() && !resource_id.is_empty() {
             let sid = subject_id.to_string();
             let rid = resource_id.to_string();
-            if let Ok(Some(cached)) = tokio::task::spawn_blocking(move || {
+            if let Ok(Some(mut cached)) = tokio::task::spawn_blocking(move || {
                 crate::cache::get_captions_cache_typed(&sid, &rid)
             })
             .await
             {
                 if !cached.is_empty() || sibling_ids.is_empty() {
+                    Self::sort_captions_by_preference(&mut cached);
                     return Ok(cached);
                 }
             }
@@ -214,7 +215,11 @@ impl MovieBoxService {
 
         let primary_fut = self.client.get_ext_captions(subject_id, resource_id);
         let mut sibling_futs = Vec::new();
-        for sib in sibling_ids.iter().take(3) {
+        for sib in sibling_ids
+            .iter()
+            .filter(|sib| !sib.is_empty() && sib.as_str() != subject_id)
+            .take(3)
+        {
             if !sib.is_empty() && sib != subject_id {
                 let client = &self.client;
                 sibling_futs.push(async move {
@@ -276,17 +281,7 @@ impl MovieBoxService {
             }
         }
 
-        deduplicated.sort_by(|a, b| {
-            let clean_a = crate::tui::text::sanitize_language_label(&a.name);
-            let clean_b = crate::tui::text::sanitize_language_label(&b.name);
-            if clean_a.eq_ignore_ascii_case("english") {
-                std::cmp::Ordering::Less
-            } else if clean_b.eq_ignore_ascii_case("english") {
-                std::cmp::Ordering::Greater
-            } else {
-                clean_a.cmp(&clean_b)
-            }
-        });
+        Self::sort_captions_by_preference(&mut deduplicated);
         if !subject_id.is_empty() && !resource_id.is_empty() && !deduplicated.is_empty() {
             let sid = subject_id.to_string();
             let rid = resource_id.to_string();
@@ -297,6 +292,23 @@ impl MovieBoxService {
         }
 
         Ok(deduplicated)
+    }
+
+    fn sort_captions_by_preference(captions: &mut [crate::providers::models::SubtitleOption]) {
+        let preferred = crate::providers::moviebox::locale::MovieBoxLocale::current();
+        captions.sort_by(|a, b| {
+            let preferred_a = preferred.matches_language_label(&a.name);
+            let preferred_b = preferred.matches_language_label(&b.name);
+            match (preferred_a, preferred_b) {
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                _ => {
+                    let clean_a = crate::tui::text::sanitize_language_label(&a.name);
+                    let clean_b = crate::tui::text::sanitize_language_label(&b.name);
+                    clean_a.cmp(&clean_b)
+                }
+            }
+        });
     }
 
     fn append_unique_captions(

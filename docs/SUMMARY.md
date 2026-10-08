@@ -11,6 +11,7 @@
 # Features & Modes
 
 - [Content Providers](providers.md)
+- [External API Integrations](api-integrations.md)
 - [Hardware Players](players.md)
 - [Batch Downloads](downloads.md)
 - [Stremio Addons](addons-mode.md)

@@ -41,6 +41,7 @@ Enter `/settings` in the search bar or click `[ ⚙ Settings ]` on the Home scre
 | Variable | Description |
 | :--- | :--- |
 | `MOVIEBOX_PLAYER` | Force media player (`"mpv"`, `"vlc"`, `"iina"`, `"android"`) |
+| `MOVIEBOX_LOCALE` | MovieBox language/region hint (`fr` or `fr-FR` by default; set `en` or `en-US` for English) |
 | `MOVIEBOX_MPV_PATH` | Custom executable path for `mpv` |
 | `MOVIEBOX_VLC_PATH` | Custom executable path for `VLC` |
 | `MOVIEBOX_IINA_PATH` | Custom executable path for `IINA` (macOS) |
@@ -53,3 +54,5 @@ Enter `/settings` in the search bar or click `[ ⚙ Settings ]` on the Home scre
 | `MOVIEBOX_IMAGE_PROTOCOL` | Force image protocol (`"kitty"`, `"sixel"`, `"iterm2"`, or `"off"`) |
 | `MOVIEBOX_CELL_SIZE` | Override font cell size for image scaling (e.g. `"10x20"`) |
 | `NO_COLOR` | Force high-contrast monochrome mode |
+
+The locale hint is sent to MovieBox as language, region, timezone, and mobile country metadata. It also sets the preferred MovieBox audio and subtitle language when a matching French or English track is available. Unknown values fall back to French.

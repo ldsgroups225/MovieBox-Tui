@@ -1,6 +1,7 @@
 pub mod adapt;
 pub mod client;
 pub mod crypto;
+pub mod locale;
 pub mod session;
 pub mod title;
 

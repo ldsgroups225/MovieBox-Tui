@@ -697,7 +697,10 @@ impl App {
                         .state
                         .selected_details
                         .as_ref()
-                        .map(|d| d.sibling_ids())
+                        .map(|d| {
+                            crate::providers::moviebox::locale::MovieBoxLocale::current()
+                                .caption_sibling_ids(d)
+                        })
                         .unwrap_or_default();
                     let season = self.state.selected_season;
                     let episode = self.state.selected_episode;

@@ -1036,7 +1036,18 @@ impl App {
                             .position(|dub| dub.subject_id == id)
                             .unwrap_or(0)
                     } else {
-                        find_by_pattern(&["original", "orig"])
+                        let preferred =
+                            crate::providers::moviebox::locale::MovieBoxLocale::current();
+                        details
+                            .dubs
+                            .iter()
+                            .position(|dub| {
+                                preferred.matches_language_label(&format!(
+                                    "{} {}",
+                                    dub.language, dub.label
+                                ))
+                            })
+                            .or_else(|| find_by_pattern(&["original", "orig"]))
                             .or_else(|| find_by_pattern(&["english", "eng"]))
                             .unwrap_or(0)
                     };
@@ -1675,7 +1686,10 @@ impl App {
                             .state
                             .selected_details
                             .as_ref()
-                            .map(|d| d.sibling_ids())
+                            .map(|d| {
+                                crate::providers::moviebox::locale::MovieBoxLocale::current()
+                                    .caption_sibling_ids(d)
+                            })
                             .unwrap_or_default();
                         let season = self.state.selected_season;
                         let episode = self.state.selected_episode;
@@ -1702,12 +1716,8 @@ impl App {
                                 .selected_details
                                 .as_ref()
                                 .map(|d| {
-                                    let mut ids = vec![d.id.value.clone()];
-                                    ids.extend(d.dubs.iter().map(|dub| dub.subject_id.clone()));
-                                    ids.retain(|s| !s.is_empty());
-                                    ids.sort();
-                                    ids.dedup();
-                                    ids
+                                    crate::providers::moviebox::locale::MovieBoxLocale::current()
+                                        .caption_sibling_ids(d)
                                 })
                                 .unwrap_or_default();
                             let season = self.state.selected_season;

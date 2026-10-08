@@ -18,7 +18,7 @@
 ## Características
 
 - **Streaming:** Películas, series, anime, dramas asiáticos y complementos comunitarios de Stremio en múltiples proveedores nativos.
-- **TV en vivo:** Importación de listas M3U con categorías de canales, soporte EPG y búsqueda.
+- **TV en vivo:** Importación de listas M3U con categorías de canales y búsqueda.
 - **Selector de resolución:** Selección directa de calidad de stream (`4K`, `1080p`, `720p`, `480p`, `Auto`) antes de reproducir.
 - **Reproductores por hardware:** Inicio directo en `mpv`, `VLC` o `IINA` con reenvío de cabeceras de autenticación y cookies.
 - **Descargador por lotes:** Descargador concurrente multisegmento con pausa y reanudación por rangos HTTP para episodios y temporadas completas.

@@ -1,3 +1,4 @@
+use super::locale::MovieBoxLocale;
 use base64::Engine;
 use hmac::{Hmac, KeyInit, Mac};
 use md5::Md5;
@@ -129,7 +130,7 @@ pub fn build_signed_headers(
     auth_token: Option<&str>,
     user_agent: &str,
     client_info: &str,
-    spoofed_ip: &str,
+    locale: MovieBoxLocale,
 ) -> reqwest::header::HeaderMap {
     let ts = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -171,8 +172,13 @@ pub fn build_signed_headers(
     );
     insert_header(
         &mut headers,
-        reqwest::header::HeaderName::from_static("x-forwarded-for"),
-        spoofed_ip,
+        reqwest::header::HeaderName::from_static("region"),
+        locale.region,
+    );
+    insert_header(
+        &mut headers,
+        reqwest::header::HeaderName::from_static("lang"),
+        locale.language,
     );
 
     if let Some(token) = auth_token {
@@ -183,7 +189,7 @@ pub fn build_signed_headers(
     headers
 }
 
-pub(crate) fn generate_client_info_and_ua() -> (String, String) {
+pub(crate) fn generate_client_info_and_ua(locale: MovieBoxLocale) -> (String, String) {
     use rand::RngExt;
     let mut rng = rand::rng();
 
@@ -205,30 +211,31 @@ pub(crate) fn generate_client_info_and_ua() -> (String, String) {
     ];
     let version_codes = [50020117, 50020118, 50020119, 50020120, 50020121];
     let network_types = ["NETWORK_WIFI", "NETWORK_MOBILE"];
-    let timezones = [
-        "Asia/Kolkata",
-        "Asia/Shanghai",
-        "Asia/Tokyo",
-        "America/New_York",
-        "Europe/London",
-    ];
-
     let android = android_versions[rng.random_range(0..android_versions.len())];
     let device = redmi_devices[rng.random_range(0..redmi_devices.len())];
     let version_code = version_codes[rng.random_range(0..version_codes.len())];
     let network = network_types[rng.random_range(0..network_types.len())];
-    let timezone = timezones[rng.random_range(0..timezones.len())];
     let gaid = random_uuid();
     let device_id = random_hex(32);
 
     let user_agent = format!(
-        "com.community.oneroom/{} (Linux; U; Android {}; en_US; {}; Build/{}; Cronet/135.0.7012.3)",
-        version_code, android.0, device.0, android.1
+        "com.community.oneroom/{} (Linux; U; Android {}; {}; {}; Build/{}; Cronet/135.0.7012.3)",
+        version_code, android.0, locale.user_agent_locale, device.0, android.1
     );
 
     let client_info = format!(
-        r#"{{"package_name":"com.community.oneroom","version_name":"4.0.01.0813.03","version_code":{},"os":"android","os_version":"{}","install_ch":"ps","device_id":"{}","install_store":"ps","gaid":"{}","brand":"{}","model":"{}","system_language":"en","net":"{}","region":"US","timezone":"{}","sp_code":"40401","X-Play-Mode":"2"}}"#,
-        version_code, android.0, device_id, gaid, device.1, device.0, network, timezone
+        r#"{{"package_name":"com.community.oneroom","version_name":"4.0.01.0813.03","version_code":{},"os":"android","os_version":"{}","install_ch":"ps","device_id":"{}","install_store":"ps","gaid":"{}","brand":"{}","model":"{}","system_language":"{}","net":"{}","region":"{}","timezone":"{}","sp_code":"{}","X-Play-Mode":"2"}}"#,
+        version_code,
+        android.0,
+        device_id,
+        gaid,
+        device.1,
+        device.0,
+        locale.language,
+        network,
+        locale.region,
+        locale.timezone,
+        locale.mobile_country_code
     );
 
     (user_agent, client_info)
@@ -251,20 +258,6 @@ fn random_uuid() -> String {
         random_hex(4),
         random_hex(12)
     )
-}
-
-pub(crate) fn random_spoofed_ip() -> String {
-    use rand::RngExt;
-    let mut rng = rand::rng();
-
-    let prefixes: &[&str] = &[
-        "103.241", "49.36", "117.195", "106.198", "122.162", "157.32", "182.70", "103.58", "27.60",
-        "59.90",
-    ];
-    let prefix = prefixes[rng.random_range(0..prefixes.len())];
-    let c: u8 = rng.random_range(1..254);
-    let d: u8 = rng.random_range(1..254);
-    format!("{}.{}.{}", prefix, c, d)
 }
 
 #[cfg(test)]
@@ -308,9 +301,11 @@ mod tests {
 
     #[test]
     fn test_generate_client_info_and_ua() {
-        let (ua, client_info) = generate_client_info_and_ua();
+        let locale = MovieBoxLocale::current();
+        let (ua, client_info) = generate_client_info_and_ua(locale);
         assert!(ua.contains("com.community.oneroom/500201"));
         assert!(ua.contains("Cronet/135.0.7012.3"));
+        assert!(ua.contains(locale.user_agent_locale));
 
         let parsed: serde_json::Value =
             serde_json::from_str(&client_info).expect("valid JSON client_info");
@@ -320,7 +315,9 @@ mod tests {
             .as_i64()
             .expect("version_code is number");
         assert!((50020117..=50020121).contains(&code));
-        assert_eq!(parsed["sp_code"], "40401");
+        assert_eq!(parsed["region"], locale.region);
+        assert_eq!(parsed["system_language"], locale.language);
+        assert_eq!(parsed["sp_code"], locale.mobile_country_code);
         assert_eq!(parsed["X-Play-Mode"], "2");
     }
 }
