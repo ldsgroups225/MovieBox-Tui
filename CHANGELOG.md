@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
-## [0.1.27] - 2026-10-08
+## [0.1.28] - 2026-10-29
+
+### Fixed
+- **Providers & Stream Resolution**:
+  - Extracted signed CDN MP4 streams from MovieBox subject detector links (`/subject-api/get`), restoring movie streaming and multi-resolution playback after upstream restricted play-info with deprecation clips.
+  - Reported explicit error causes when MovieBox serves placeholder clips instead of generic "no streams available", and surfaced upstream HTTP failure statuses directly to the user.
+- **Download Engine & Batch Queue**:
+  - Recorded only flushed bytes to `.part.json` segment progress during downloads, preventing aborted or paused workers from leaving zero-byte gaps and file corruption on resume.
+
+### Changed
+- **Dependencies & Build Infrastructure**:
+  - Upgraded `tokio` to 1.54.1, `scraper` to 0.29.0, `lru` to 0.19.0, `zip` to 9.1.0, `sha2` to 0.11.1, `open` to 5.4.5, `libc` to 0.2.191, and `serde_json` to 1.0.154.
+
+## [0.1.27] - 2026-10-23
+
+### Fixed
+- **Media Playback & Subtitle Engine**:
+  - Removed `--play-and-exit` from VLC player invocations so the player stays active across adaptive and HLS chunk transitions.
+  - Reset legacy Android player defaults in graphical X11 and Wayland sessions so native Linux players take precedence over external Android intent dialogs.
+  - Prioritized native Linux media player paths over foreign container fallbacks on Linux systems and preserved dynamic auto-player resolution for unconfigured sessions.
+- **Providers & Stream Resolution**:
+  - Recovered playable signed MP4 streams via `/resource-position/v2` when MovieBox returns deprecation notice clips, querying exact seasons and episodes and reporting accurate file sizes.
+  - Stripped the DASH `Referer` header on direct MP4 streams to prevent CDN HTTP 429 throttling.
+  - Bumped the MovieBox stream cache schema to `v2_` to discard stale cached deprecation notices.
+  - Filtered out unhosted MovieBox `/hls/` signed cookie targets in manifest resolution, which stops unplayable H.264 stream entries from failing with HTTP 404 during downloads or media playback.
+- **Download Engine & Batch Queue**:
+  - Fixed season batch downloads by arming `is_waiting_for_download_stream` during queue steps, eliminating immediate empty-list download calls that aborted multi-episode queues.
+  - Reset the download resolution state lock on 4KHDHub resolver timeouts and errors so failed mirror resolutions do not block subsequent download attempts.
+  - Added sequential single-connection fallback to the internal HTTP downloader when multi-worker segmented range requests receive HTTP 403, 429, or network disconnects.
 
 ### Added
 - **French-First MovieBox Locale**:
@@ -16,6 +44,7 @@
 ### Changed
 - Corrected Live TV documentation to remove the unsupported EPG claim.
 - **Dependencies & Build Infrastructure**:
+  - Upgraded `zip` to 9.0.5, `rustls` to 0.23.46, `quinn-proto` to 0.11.19, `rustls-webpki` to 0.103.16, and `webpki-roots` to 1.0.10, resolving RustSec security advisories.
   - Upgraded `sha2` to 0.11 with chunked streaming hash updates, preserving non-blocking checksum verification for release archives.
   - Upgraded `dirs` to 7.0, `futures` to 0.3.34, and `zip` to 8.6 across platform config paths, async tasks, and updater archive extraction.
 
