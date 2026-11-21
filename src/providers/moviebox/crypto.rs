@@ -414,7 +414,8 @@ mod tests {
 
     #[test]
     fn test_build_signed_headers_include_build_tag() {
-        let (_, client_info) = generate_client_info_and_ua();
+        let locale = MovieBoxLocale::current();
+        let (_, client_info) = generate_client_info_and_ua(locale);
         let headers = build_signed_headers(
             "GET",
             "https://api.example.com/path",
@@ -422,7 +423,7 @@ mod tests {
             None,
             "ua",
             &client_info,
-            "1.2.3.4",
+            locale,
         );
         let tag = headers
             .get("x-client-build")

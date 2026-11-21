@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.30] - 2026-11-18
+
+### Fixed
+- **Providers & Stream Resolution**:
+  - Added support for Stremio addon `behaviorHints.proxyHeaders` (including nested `request` dictionaries), forwarding custom headers like `Referer` and `User-Agent` to player invocations (MPV/VLC) to prevent HTTP 403 Forbidden stream rejections (#244).
+- **Media Playback & Subtitle Engine**:
+  - Fixed subtitle selection popup being skipped on subsequent series episodes or certain movie streams by falling back to sibling stream resource IDs when the selected release lacks an explicit `resource_id` (#236).
+  - Switched background caption prefetching to use the active preferred stream's resource ID rather than hardcoding the first stream in the list (#236).
+- **In-App Updater Lifecycle**:
+  - Prevented a deadlock in Windows in-app self-update where the helper script hung in `:wait_loop` due to `DETACHED_PROCESS` breaking anonymous pipe handling in `cmd.exe` (#240).
+  - Standardized helper script calls to `%SystemRoot%\System32\tasklist.exe` and `%SystemRoot%\System32\timeout.exe` to guarantee system utility resolution, and increased move retry attempts to 10 for resilience against antivirus background locks (#240).
 
 ## [0.1.29] - 2026-11-05
 
